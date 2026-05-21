@@ -147,6 +147,12 @@ export const CensusWeb3Addresses = () => {
                   <Input
                     {...register(`addresses.${index}.address`, {
                       required: { value: censusType === CensusTypes.Web3, message: t('form.error.field_is_required') },
+                      maxLength: {
+                        value: 42,
+                        message: t('form.error.address_max_length', {
+                          defaultValue: 'Address must be at most 42 characters',
+                        }),
+                      },
                       validate: {
                         pattern: (value) => /^(0x)?[0-9a-f]{40}$/i.test(value) || t('form.error.address_pattern'),
                         duplicate: (value) => {

@@ -386,6 +386,7 @@
     },
     "error": {
       "address_already_in_use": "Dirección ya en uso",
+      "address_max_length": "",
       "address_pattern": "Solo se permiten direcciones hexadecimales (ej. 0x031101A...)",
       "census_config_required": "Configura los ajustes de autenticación del censo.",
       "email_invalid": "Dirección de correo electrónico no válida",

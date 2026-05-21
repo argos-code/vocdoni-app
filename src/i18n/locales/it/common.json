@@ -386,6 +386,7 @@
     },
     "error": {
       "address_already_in_use": "Indirizzo già in uso",
+      "address_max_length": "",
       "address_pattern": "Sono consentiti solo indirizzi esadecimali (es. 0x031101A...)",
       "census_config_required": "Configurare le impostazioni di autenticazione del censimento.",
       "email_invalid": "Indirizzo email non valido",

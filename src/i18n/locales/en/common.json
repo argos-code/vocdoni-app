@@ -383,6 +383,7 @@
     },
     "error": {
       "address_already_in_use": "Address already in use",
+      "address_max_length": "Address must be at most 42 characters",
       "address_pattern": "Only hex addresses are allowed (e.g 0x031101A...)",
       "census_config_required": "Please configure the census authentication settings.",
       "email_invalid": "Invalid email address",

@@ -386,6 +386,7 @@
     },
     "error": {
       "address_already_in_use": "Aquesta adreça ja és al cens",
+      "address_max_length": "",
       "address_pattern": "Només s'admeten adreces hexadecimals (p. ex. 0x031101A...)",
       "census_config_required": "Si us plau, configura com s'autenticaran els votants",
       "email_invalid": "Adreça de correu electrònic no vàlida",
