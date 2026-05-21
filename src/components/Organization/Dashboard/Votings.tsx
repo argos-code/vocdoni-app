@@ -5,6 +5,7 @@ import { ElectionListWithPagination } from '@vocdoni/sdk'
 import { useTranslation } from 'react-i18next'
 import { ListStateAlert } from '~components/Feedback/ListStateAlert'
 import { NoResultsFiltering } from '~components/Layout/NoResultsFiltering'
+import ProcessListSkeleton from '../../Process/Dashboard/ProcessListSkeleton'
 import ProcessesTable from '../../Process/Dashboard/ProcessesTable'
 import NoElections from '../NoElections'
 
@@ -18,8 +19,9 @@ type VotingsProps = {
 } & VotingsListProps
 
 const Votings = ({ path, data, status }: VotingsProps) => {
-  const { organization } = useOrganization()
+  const { loading, organization } = useOrganization()
 
+  if (loading) return <ProcessListSkeleton />
   if (!organization) return null
 
   return (
