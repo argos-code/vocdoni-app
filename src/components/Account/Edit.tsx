@@ -1,7 +1,8 @@
-import { Button, Dialog, Flex, Text } from '@chakra-ui/react'
+import { Button, Dialog, Field, Flex, Text } from '@chakra-ui/react'
 import { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { ThemeToggleGroup } from '~components/Layout/ColorModeSwitcher'
 import { DashboardBox } from '~components/Dashboard/Contents'
 import DeleteModal from '~components/Modal/DeleteModal'
 import { Routes } from '~routes'
@@ -17,6 +18,17 @@ export const AccountEdit = () => {
     <Flex flexDirection='column' gap={6}>
       <DashboardBox px={6} pb={6} pt={4}>
         <AccountForm profile={profile} />
+      </DashboardBox>
+      <DashboardBox p={6}>
+        <Text fontSize='2xl' fontWeight='600'>
+          {t('preferences', { defaultValue: 'Preferences' })}
+        </Text>
+        <Field.Root display='flex' justifyContent='space-between' alignItems='center' flexDirection='row'>
+          <Field.Label m={0}>
+            <Trans i18nKey='theme'>Theme</Trans>
+          </Field.Label>
+          <ThemeToggleGroup />
+        </Field.Root>
       </DashboardBox>
       <DashboardBox p={6}>
         <Text fontSize='2xl' fontWeight='600'>
