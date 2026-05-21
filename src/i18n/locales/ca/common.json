@@ -1596,6 +1596,14 @@
     "section_title": "Eleccions",
     "voted": "Ja has votat"
   },
+  "shortcuts": {
+    "close_modal": "",
+    "help_title": "",
+    "new_process": "",
+    "none": "",
+    "show_help": "",
+    "view_results": ""
+  },
   "signin": "Inicia sessió",
   "signin_google": "Inicia sessió amb Google",
   "signin_subtitle": "Introdueix la teva informació per començar",

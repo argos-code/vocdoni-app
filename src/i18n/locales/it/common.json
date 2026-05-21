@@ -1596,6 +1596,14 @@
     "section_title": "Elezioni",
     "voted": "Hai già votato"
   },
+  "shortcuts": {
+    "close_modal": "",
+    "help_title": "",
+    "new_process": "",
+    "none": "",
+    "show_help": "",
+    "view_results": ""
+  },
   "signin": "Accedi",
   "signin_google": "Accedi con Google",
   "signin_subtitle": "Continua per accedere al tuo account",

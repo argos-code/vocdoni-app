@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { LuPanelLeft } from 'react-icons/lu'
 import { Outlet } from 'react-router-dom'
 import DashboardMenu from '~components/Dashboard/Menu'
+import { KeyboardShortcutsManager } from '~components/KeyboardShortcuts/KeyboardShortcutsManager'
 import AnnouncementBanner from '~components/Layout/AnnouncementBanner'
 import { PricingModalProvider } from '~components/Pricing/PricingModalProvider'
 import { LocalStorageKeys } from '~constants'
@@ -31,6 +32,7 @@ const LayoutDashboard: React.FC = () => {
 
   return (
     <DashboardLayoutContext.Provider value={{ reduced: reducedValue }}>
+      <KeyboardShortcutsManager />
       <DashboardLayoutProviders>
         <Flex minH='100svh' w='full' _dark={{ bg: 'brand.650' }} maxW='max-window-width' margin='0 auto'>
           {/* Sidebar for large screens */}

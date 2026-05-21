@@ -1572,6 +1572,14 @@
     "section_title": "Elections",
     "voted": "You already voted"
   },
+  "shortcuts": {
+    "close_modal": "Close modal / dialog",
+    "help_title": "Keyboard shortcuts",
+    "new_process": "Create new process",
+    "none": "No shortcuts available.",
+    "show_help": "Show keyboard shortcuts",
+    "view_results": "View results for current process"
+  },
   "signin": "Log In",
   "signin_google": "Sign in with Google",
   "signin_subtitle": "Continue to acces your account",
