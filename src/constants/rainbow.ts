@@ -2,44 +2,10 @@ import { connectorsForWallets } from '@rainbow-me/rainbowkit'
 import '@rainbow-me/rainbowkit/styles.css'
 import { coinbaseWallet, metaMaskWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets'
 import { createConfig, http } from 'wagmi'
-import {
-  arbitrum,
-  avalanche,
-  base,
-  bsc,
-  eos,
-  fantom,
-  gnosis,
-  goerli,
-  hardhat,
-  localhost,
-  mainnet,
-  optimism,
-  polygon,
-  polygonMumbai,
-  polygonZkEvm,
-  zora,
-} from 'wagmi/chains'
+import { arbitrum, avalanche, base, bsc, gnosis, mainnet, optimism, polygon } from 'wagmi/chains'
 
 // Define chains for the application
-const chains = [
-  mainnet,
-  arbitrum,
-  avalanche,
-  base,
-  bsc,
-  eos,
-  fantom,
-  gnosis,
-  goerli,
-  hardhat,
-  localhost,
-  optimism,
-  polygon,
-  polygonMumbai,
-  polygonZkEvm,
-  zora,
-] as const
+const chains = [mainnet, arbitrum, avalanche, base, bsc, gnosis, optimism, polygon] as const
 
 export { chains }
 
@@ -67,16 +33,8 @@ export const wagmiConfig = createConfig({
     [avalanche.id]: http(),
     [base.id]: http(),
     [bsc.id]: http(),
-    [eos.id]: http(),
-    [fantom.id]: http(),
     [gnosis.id]: http(),
-    [goerli.id]: http(),
-    [hardhat.id]: http(),
-    [localhost.id]: http(),
     [optimism.id]: http(),
     [polygon.id]: http(),
-    [polygonMumbai.id]: http(),
-    [polygonZkEvm.id]: http(),
-    [zora.id]: http(),
   },
 })

@@ -5,11 +5,14 @@ import BrowserLanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 import { ucfirst } from '~utils/strings'
 import { baseLanguages } from './languages'
-import { dateLocales, reactComponentsTranslations, translations } from './locales'
+import { dateLocales } from './locales'
 
-// Translation resources are bundled for every supported language regardless of
-// the runtime LANGUAGES config; the runtime config only restricts which
-// languages are offered and which is the fallback (see LanguageOptions below).
+// English is the fallback language and must always be available synchronously — at
+// init time, before BrowserLanguageDetector resolves, and in tests. All other locale
+// files are loaded lazily on demand (see fetchLanguageData / loadLanguageInto).
+import enCommon from './locales/en/common.json'
+import enReactComponents from './locales/en/react-components.json'
+
 const allLanguages = Object.keys(baseLanguages)
 const DEFAULT_FALLBACK_LANGUAGE = 'en'
 const defaultNamespaces = ['common', reactComponentsNamespace]
@@ -34,22 +37,67 @@ type DebugOptions = {
 
 export const shouldEnableI18nDebug = ({ isDev, isTestEnv, isBrowser }: DebugOptions) => isDev && !isTestEnv && isBrowser
 
-const resources = Object.fromEntries(
-  allLanguages.map((lang) => {
-    const componentResources = reactComponentsResources[lang as keyof typeof reactComponentsResources]
+// Build the combined resource bundles for a single language from pre-loaded JSON data.
+const buildLangResources = (lang: string, common: Record<string, unknown>, rcComponents: Record<string, unknown>) => {
+  const componentResources = reactComponentsResources[lang as keyof typeof reactComponentsResources]
+  return {
+    common,
+    [reactComponentsNamespace]: {
+      ...(componentResources?.[reactComponentsNamespace] ?? {}),
+      ...rcComponents,
+    },
+  }
+}
 
-    return [
+// Glob patterns evaluated at build time by Vite — each match becomes a separate
+// lazy chunk.  English is also matched but handled via the static import above,
+// so its glob loader is never called (hasResourceBundle guards against it).
+const commonGlob = import.meta.glob<{ default: Record<string, unknown> }>('./locales/*/common.json')
+const rcGlob = import.meta.glob<{ default: Record<string, unknown> }>('./locales/*/react-components.json')
+
+// Per-language raw-data cache so each language is fetched at most once, even if
+// multiple instances request the same language concurrently.
+const languageDataCache = new Map<
+  string,
+  Promise<{ common: Record<string, unknown>; rcComponents: Record<string, unknown> }>
+>()
+
+const fetchLanguageData = (lang: string) => {
+  if (!languageDataCache.has(lang)) {
+    const commonLoader = commonGlob[`./locales/${lang}/common.json`]
+    const rcLoader = rcGlob[`./locales/${lang}/react-components.json`]
+
+    if (!commonLoader || !rcLoader) {
+      return Promise.reject(new Error(`[i18n] No locale files for language: ${lang}`))
+    }
+
+    languageDataCache.set(
       lang,
-      {
-        common: translations[lang] ?? {},
-        [reactComponentsNamespace]: {
-          ...(componentResources?.[reactComponentsNamespace] ?? {}),
-          ...(reactComponentsTranslations[lang] ?? {}),
-        },
-      },
-    ]
-  })
-)
+      Promise.all([commonLoader(), rcLoader()])
+        .then(([common, rc]) => ({ common: common.default, rcComponents: rc.default }))
+        .catch((err) => {
+          languageDataCache.delete(lang)
+          return Promise.reject(err)
+        })
+    )
+  }
+  return languageDataCache.get(lang)!
+}
+
+// Load a language into an i18n instance if it isn't already registered.
+// Idempotent and safe to call concurrently — the data cache prevents duplicate fetches.
+// Falls back silently on error; the fallback language remains available.
+const loadLanguageInto = async (instance: I18nInstance, lang: string): Promise<void> => {
+  if (instance.hasResourceBundle(lang, 'common')) return
+  try {
+    const { common, rcComponents } = await fetchLanguageData(lang)
+    const langResources = buildLangResources(lang, common, rcComponents)
+    instance.addResourceBundle(lang, 'common', langResources.common, true, true)
+    instance.addResourceBundle(lang, reactComponentsNamespace, langResources[reactComponentsNamespace], true, true)
+  } catch {
+    console.warn(`[i18n] Failed to load locale: ${lang}`)
+  }
+}
 
 const registerFormatters = (instance: I18nInstance) => {
   instance.services.formatter?.add('relative', (value: any, lng: string | undefined, options: any) => {
@@ -97,6 +145,17 @@ const registerFormatters = (instance: I18nInstance) => {
   instance.services.formatter?.add('ucfirst', (value: string, lng: string | undefined) => ucfirst(value, lng))
 }
 
+// Only the fallback language (English) is included in the initial bundle; all others
+// are loaded on demand.  partialBundledLanguages tells i18next not to error when a
+// supported language isn't in the initial resources object.
+const fallbackResources = {
+  [DEFAULT_FALLBACK_LANGUAGE]: buildLangResources(
+    DEFAULT_FALLBACK_LANGUAGE,
+    enCommon as Record<string, unknown>,
+    enReactComponents as Record<string, unknown>
+  ),
+}
+
 const getI18nOptions = ({
   language,
   isBrowser,
@@ -110,7 +169,8 @@ const getI18nOptions = ({
   debug: shouldEnableI18nDebug({ isDev: import.meta.env.DEV, isTestEnv, isBrowser }),
   ns: defaultNamespaces,
   defaultNS: 'common',
-  resources,
+  resources: fallbackResources,
+  partialBundledLanguages: true,
   showSupportNotice: false,
   interpolation: {
     escapeValue: false,
@@ -150,9 +210,24 @@ const initializeInstance = ({
       if (useBrowserLanguageDetector && instance.resolvedLanguage !== instance.language) {
         instance.changeLanguage(instance.resolvedLanguage)
       }
+
+      // Trigger an immediate load for the language resolved after init (e.g. by
+      // BrowserLanguageDetector).  This is fire-and-forget — the fallback language
+      // is always available while the load is in flight.
+      const activeLang = instance.resolvedLanguage ?? instance.language
+      if (activeLang && activeLang !== DEFAULT_FALLBACK_LANGUAGE) {
+        void loadLanguageInto(instance, activeLang)
+      }
     }
   )
   registerFormatters(instance)
+
+  // Lazily load resources for any language the user switches to after init.
+  instance.on('languageChanged', (lang: string) => {
+    if (lang && lang !== DEFAULT_FALLBACK_LANGUAGE) {
+      void loadLanguageInto(instance, lang)
+    }
+  })
 }
 
 // Applies runtime LANGUAGES (supported set + fallback) to an already-initialized
@@ -211,7 +286,12 @@ export const createPageI18nInstance = (language: string, languageOptions?: Langu
     useBrowserLanguageDetector: false,
     languageOptions,
   })
-
+  // Pre-fetch the language's resources immediately so they're available as soon
+  // as possible.  The languageChanged listener in initializeInstance will also
+  // pick up any subsequent switches.
+  if (language !== DEFAULT_FALLBACK_LANGUAGE) {
+    void loadLanguageInto(instance, language)
+  }
   return instance
 }
 
